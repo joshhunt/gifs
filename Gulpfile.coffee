@@ -72,10 +72,10 @@ gulp.task 'publish', ->
     gutil.log "  - env.S3_SECRET: #{env.S3_SECRET.cyan}".blue
     gutil.log "  - env.S3_BUCKET: #{env.S3_BUCKET.cyan}".blue
     publisher = awspublish.create { key: env.S3_KEY,  secret: env.S3_SECRET, bucket: env.S3_BUCKET }
-    headers =
-        'Cache-Control': 'max-age=315360000, no-transform, public'
+    headers = 'Cache-Control': 'max-age=315360000, no-transform, public'
 
     gulp.src "#{OUTPUT}/**/*"
+        .pipe require('gulp-debug')()
         .pipe publisher.publish headers
         .pipe publisher.cache()
         .pipe awspublish.reporter()
