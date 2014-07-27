@@ -9,6 +9,8 @@ node_modules
 
 # Misc.
 .DS_Store
+env.fish
+.awspublish*
 
 # Project specific
 network-prototype-3/feeds/*.yaml

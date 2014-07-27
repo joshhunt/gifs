@@ -11,11 +11,13 @@ concat        = require 'gulp-concat'
 uglifyjs      = require 'gulp-uglify'
 minifycss     = require 'gulp-minify-css'
 bowerFiles    = require 'main-bower-files'
+awspublish    = require 'gulp-awspublish'
 ngAnnotate    = require 'gulp-ng-annotate'
 ngTemplates   = require 'gulp-angular-templatecache'
 autoprefiexer = require 'gulp-autoprefixer'
 
 OUTPUT = './dist'
+env = process.env
 
 gulp.on 'err', gutil.log
 
@@ -64,8 +66,18 @@ gulp.task 'watch', ->
     gulp.watch './frontend/scripts/**/*.coffee', ['scripts']
     gulp.watch './frontend/templates/**/*.html', ['scripts']
 
+gulp.task 'publish', ->
+    publisher = awspublish.create { key: env.S3_KEY,  secret: env.S3_SECRET, bucket: env.S3_BUCKET }
+    headers =
+        'Cache-Control': 'max-age=315360000, no-transform, public'
+
+    gulp.src "#{OUTPUT}/**/*"
+        .pipe publisher.publish headers
+        .pipe publisher.cache()
+        .pipe awspublish.reporter()
+
 gulp.task 'heroku:production', ['build'], ->
-    gutil.log 'Built for production'.green
+    gulp.start 'publish'
 
 gulp.task 'dev', ['clean'], ->
     gulp.start 'styles', 'scripts', 'assets', 'watch'
