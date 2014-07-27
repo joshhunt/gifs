@@ -2,28 +2,24 @@ hbs     = require 'hbs'
 logfmt  = require 'logfmt'
 express = require 'express'
 
-app = express()
-config =
-    CDN_URL: process.env.CDN_URL or ''
+db      = require './database'
+config  = require './config'
 
+app = express()
 
 hbs.registerHelper 'static', (text) ->
-    config.CDN_URL + text
+    prefix = if config.isProd then config config.CDN_URL else ''
+    prefix + text
 
+app.set 'views', __dirname
+app.set 'view engine', 'hbs'
 app.use logfmt.requestLogger()
 app.use '/dist', express.static 'dist'
 app.use '/static', express.static 'dist/static'
-app.set 'view engine', 'hbs'
-app.set 'views', __dirname
-
-app.route '/api'
-    .get (req, res) ->
-        res.send 'Hello World!'
 
 app.route '/api/gifs'
     .get (req, res) ->
-        console.log 'Getting gifs'
-        res.json require './tmp/gifs.json'
+        db.gifs (gifs) -> res.json {gifs}
 
 angularRoutes = ['/', '/list']
 

@@ -67,6 +67,10 @@ gulp.task 'watch', ->
     gulp.watch './frontend/templates/**/*.html', ['scripts']
 
 gulp.task 'publish', ->
+    gutil.log 'Publishing with credentials'.blue
+    gutil.log "  - env.S3_KEY: #{env.S3_KEY.cyan}".blue
+    gutil.log "  - env.S3_SECRET: #{env.S3_SECRET.cyan}".blue
+    gutil.log "  - env.S3_BUCKET: #{env.S3_BUCKET.cyan}".blue
     publisher = awspublish.create { key: env.S3_KEY,  secret: env.S3_SECRET, bucket: env.S3_BUCKET }
     headers =
         'Cache-Control': 'max-age=315360000, no-transform, public'
