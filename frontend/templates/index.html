@@ -1,1 +1,18 @@
-<h1>Hello, Gifs</h1>
+<header>
+    <div class="preview">
+        <img class="preview__img" ng-src="{{previewUrl}}">
+    </div>
+    <h1>Gifs!</h1>
+    <p>Hey, you've found my GIF collection!</p>
+</header>
+
+<main>
+    <div class="tags">
+        <div class="tags__box" ng-repeat="(title, gifList) in gifs">
+            <h3 class="tags__title">{{title}}</h3>
+            <ul class="gifs">
+                <li class="gifs__gif" ng-repeat="gif in gifList"><a href="{{gif.url}}" target="_blank">{{gif.title}}</a></li>
+            </ul>
+        </div>
+    </div>
+</main>

@@ -20,6 +20,11 @@ app.route '/api'
     .get (req, res) ->
         res.send 'Hello World!'
 
+app.route '/api/gifs'
+    .get (req, res) ->
+        console.log 'Getting gifs'
+        res.json require './tmp/gifs.json'
+
 angularRoutes = ['/', '/list']
 
 for url in angularRoutes

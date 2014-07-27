@@ -2,6 +2,7 @@ gifsApp = angular.module 'gifs', [
     'gifs-templates'
 
     'ui.router'
+    'ngResource'
 ]
 
 gifsApp.config ($stateProvider, $locationProvider, $urlRouterProvider) ->
@@ -21,6 +22,25 @@ gifsApp.config ($stateProvider, $locationProvider, $urlRouterProvider) ->
         .state 'index',
             url: '/'
             templateUrl: 'index.html'
+            controller: 'IndexCtrl'
         .state 'gif',
             url: '/list'
             templateUrl: 'list.html'
+
+gifsApp.controller 'IndexCtrl', ($scope, Gif) ->
+    $scope.previewUrl = 'http://d114b3t5xlnw3o.cloudfront.net/uploads/obama-crying.gif'
+    $scope.gifs = Gif.query()
+
+gifsApp.factory 'transform', ->
+    response: (key) ->
+        (raw) ->
+            if _.isNull(key) then null else angular.fromJson(raw)[key]
+
+gifsApp.factory 'Gif', ($resource, transform) ->
+    $resource '/api/gifs/:id', {id: '@id'},
+        query:
+            method: 'GET'
+            transformResponse: transform.response 'gifs'
+
+        update:
+            method: 'PUT'
