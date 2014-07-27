@@ -24,4 +24,3 @@ gifsApp.config ($stateProvider, $locationProvider, $urlRouterProvider) ->
         .state 'gif',
             url: '/list'
             templateUrl: 'list.html'
-

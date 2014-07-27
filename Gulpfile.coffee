@@ -64,10 +64,13 @@ gulp.task 'watch', ->
     gulp.watch './frontend/scripts/**/*.coffee', ['scripts']
     gulp.watch './frontend/templates/**/*.html', ['scripts']
 
+gulp.task 'heroku:production', ['build'], ->
+    gutil.log 'Built for production'.green
+
 gulp.task 'dev', ['clean'], ->
     gulp.start 'styles', 'scripts', 'assets', 'watch'
 
 gulp.task 'default', -> gulp.start 'dev'
 
 gulp.task 'build', ['clean'], ->
-    gulp.start 'styles', 'scripts', 'static'
+    gulp.start 'styles', 'scripts', 'assets'
