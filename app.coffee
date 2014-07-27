@@ -8,7 +8,7 @@ config  = require './config'
 app = express()
 
 hbs.registerHelper 'static', (text) ->
-    prefix = if config.isProd then config config.CDN_URL else ''
+    prefix = if config.isProd then config.CDN_URL else ''
     prefix + text
 
 app.set 'views', __dirname
