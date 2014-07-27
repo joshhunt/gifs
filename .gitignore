@@ -1,0 +1,14 @@
+# Build artefacts
+dist
+.sass-cache
+
+# Bower and Node.js modules
+components
+bower_components
+node_modules
+
+# Misc.
+.DS_Store
+
+# Project specific
+network-prototype-3/feeds/*.yaml
