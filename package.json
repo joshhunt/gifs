@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/gulp build",
-    "dev": "./node_modules/.bin/gulp default"
+    "dev": "./node_modules/.bin/gulp default",
+    "postinstall": "./node_modules/.bin/bower install"
   },
   "author": "",
   "license": "ISC",
