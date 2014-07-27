@@ -75,7 +75,6 @@ gulp.task 'publish', ->
     headers = 'Cache-Control': 'max-age=315360000, no-transform, public'
 
     gulp.src "#{OUTPUT}/**/*"
-        .pipe require('gulp-debug')()
         .pipe publisher.publish headers
         .pipe publisher.cache()
         .pipe awspublish.reporter()
