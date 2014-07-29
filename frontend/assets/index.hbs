@@ -3,8 +3,15 @@
     <head>
         <title>Gifs</title>
     </head>
-    <body>
+    <body ng-controller="UploadCtrl as upld" ng-file-drop="upld.onFileSelect($files)" ng-file-drag-over-class="uploader-active" style="display: none">
         <div ui-view></div>
+
+        <div class="uploader">
+            <div class="uploader__inner">
+                <h2>Drop .gifs to upload</h2>
+            </div>
+        </div>
+
         <script src="{{static '/static/bundle.js'}}"></script>
         <link rel="stylesheet" href="{{static '/static/styles.css'}}">
     </body>

@@ -4,6 +4,7 @@ express = require 'express'
 
 db      = require './database'
 config  = require './config'
+aws     = require './aws'
 
 app = express()
 
@@ -17,9 +18,10 @@ app.use logfmt.requestLogger()
 app.use '/dist', express.static 'dist'
 app.use '/static', express.static 'dist/static'
 
-app.route '/api/gifs'
-    .get (req, res) ->
-        db.gifs (gifs) -> res.json {gifs}
+app.get '/api/gifs', (req, res) ->
+    db.gifs (gifs) -> res.json {gifs}
+
+app.get '/api/sign', aws.getS3Policy
 
 angularRoutes = ['/', '/list']
 

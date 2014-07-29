@@ -81,3 +81,42 @@ main
 
 .gifs__gif
     line-height: 1.5
+
+.uploader
+    position: fixed
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    padding: spacing
+    color: white
+    background: rgba(0,0,0,.75)
+    transition: 150ms ease-in-out
+
+    // Disable it normally
+    opacity: 0
+    pointer-events: none
+
+    .uploader-active &
+        cursor: copy
+        opacity: 1
+
+.uploader__inner
+    width: 100%
+    height: 100%
+    border: 8px dashed rgb(250, 250, 250)
+    border-radius: 10px
+    display: flex
+    align-items: center
+    justify-content: center
+
+    h2
+        font-size: 40px
+        font-weight: 600
+
+
+// We have display: none on a style tag to prevent the uploader
+// from flashing before angular and styles are loaded in
+body
+.uploader
+    display: block !important
