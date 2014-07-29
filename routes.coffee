@@ -1,10 +1,13 @@
+_      = require 'underscore'
 crypto = require 'crypto'
+
+db     = require './database'
 config = require './config'
+
 
 getExpiryTime = ->
     date = new Date()
     "#{date.getFullYear()}-#{date.getMonth() + 1}-#{date.getDate() + 1}T#{date.getHours() + 3}:00:00.000Z"
-
 
 createS3Policy = (contentType, callback) ->
     date = new Date()
@@ -34,7 +37,32 @@ createS3Policy = (contentType, callback) ->
     callback s3Credentials
 
 
-exports.getS3Policy = (req, res) ->
+@getS3Policy = (req, res) ->
     createS3Policy req.query.mimeType, (creds, err) ->
         res.status(200).send(creds)  unless err
         res.status(500).send(err)    if err
+
+@getAllGifs = (req, res) ->
+    db.gifs (gifs) ->
+        res.json {gifs}
+
+@createGif = (req, res) ->
+    res.status(400).json({error: 'Missing body'}) unless req.body
+
+    console.log 'request body:'
+    console.log req.body
+
+    # Pick only whitelisted keys
+    newGif = _.pick req.body, ['title', 'path', 'tags']
+    newGif.tags ?= ['@not-tagged']
+
+    console.log 'gonna create a gif'
+    db.createGif newGif, (gif, err) ->
+        if err
+            console.log 'fuck, an error', err
+            res.status(500).json err
+        console.log '\ncreateGif route callback got called, about to respond with'
+        console.log gif
+        res.status(201).json gif
+
+

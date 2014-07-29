@@ -1,13 +1,13 @@
-fs      = require 'fs'
-url     = require 'url'
+fs         = require 'fs'
+url        = require 'url'
 
-hbs     = require 'hbs'
-logfmt  = require 'logfmt'
-express = require 'express'
+hbs        = require 'hbs'
+logfmt     = require 'logfmt'
+express    = require 'express'
+bodyParser = require 'body-parser'
 
-db      = require './database'
-config  = require './config'
-aws     = require './aws'
+config     = require './config'
+routes     = require './routes'
 
 app = express()
 
@@ -24,14 +24,17 @@ hbs.registerHelper 'static', (text) ->
 
 app.set 'views', __dirname
 app.set 'view engine', 'hbs'
+
+app.use bodyParser.json()
 app.use logfmt.requestLogger()
 app.use '/dist', express.static 'dist'
 app.use '/static', express.static 'dist/static'
 
-app.get '/api/gifs', (req, res) ->
-    db.gifs (gifs) -> res.json {gifs}
+app.route '/api/gifs'
+    .get  routes.getAllGifs
+    .post routes.createGif
 
-app.get '/api/sign', aws.getS3Policy
+app.get '/api/sign', routes.getS3Policy
 
 angularRoutes = ['/', '/list']
 

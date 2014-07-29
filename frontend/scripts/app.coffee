@@ -28,68 +28,87 @@ gifsApp.config ($stateProvider, $locationProvider, $urlRouterProvider) ->
             url: '/list'
             templateUrl: 'list.html'
 
-gifsApp.controller 'IndexCtrl', ($scope, Gif) ->
+gifsApp.controller 'IndexCtrl', (Gif, $rootScope, $scope) ->
     $scope.previewUrl = 'http://d114b3t5xlnw3o.cloudfront.net/uploads/obama-crying.gif'
     $scope.gifs = Gif.query()
 
-gifsApp.controller 'UploadCtrl', ($http, $scope, $upload) ->
+    $rootScope.$on 'gifs.refreshIndex', ->
+        console.log 'refreshing gifs'
+        $scope.gifs.$query()
 
-    $scope.imageUploads
-
-    _formatName = (filename) ->
-        [parts..., ext] = filename.split '.'
-        name = parts.join ''
-        name = name.toLowerCase().replace(/[^\w ]+/g, '').replace RegExp(' +', 'g'), '-'
-        "#{name}.#{ext}"
+gifsApp.controller 'UploadCtrl', (Gif, gifUploader, $http, $rootScope, $scope, $upload) ->
 
     @onFileSelect = ($files) =>
         @files = $files
-        @uploads = []
-        @imageUploads = []
-        window.imageUploads = @imageUploads
+
+        _saveGif = (gifData) ->
+            gif = new Gif {
+                title: gifData.fileName
+                path: gifData.path
+            }
+
+            gif.$create()
 
         for file in $files
+            @uploading = true
             file.progress = 0
-            file.key = file.lastModifiedDate + file.name + file.type + file.size
-
-            _processFile = (file) =>
-                $http.get("/api/sign?mimeType=#{file.type}").success (resp) =>
-                    s3Params = resp
-                    console.log 'Got signing data:', resp
-                    console.log 'uploading...'
-                    @uploads[file.key] = $upload.upload(
-                        url: 'https://gifsjoshhunt.s3.amazonaws.com/' # todo: don't hard code this
-                        method: 'POST'
-                        file: file
-                        data:
-                            'key': 'uploads/' + _formatName file.name
-                            'acl': 'public-read'
-                            'Content-Type' : file.type,
-                            'AWSAccessKeyId': s3Params.AWSAccessKeyId,
-                            'success_action_status' : '201',
-                            'Policy' : s3Params.s3Policy,
-                            'Signature' : s3Params.s3Signature
-                    ).then((resp) =>
-                        console.log 'File upload promise resolved with', resp
-                        file.progress = 100
-                        if resp.status is 201
-                            data = xml2json.parser resp.data
-                            parsedData =
-                                location: decodeURIComponent data.postresponse.location
-                                bucket:   data.postresponse.bucket
-                                etag:     data.postresponse.etag
-                                key:      data.postresponse.key
-
-                            console.log 'upload complete', parsedData
-                            @imageUploads.push parsedData
-                    , null, (evt) ->
-                        console.log 'progress event:', evt
-                        file.progress = parseInt 100.0 * evt.loaded / evt.total
-                    )
-
-            _processFile file
+            gifUploader file
+                .then _saveGif
+                .then (data) =>
+                    @uploading = false
+                    $rootScope.$broadcast 'gifs.refreshIndex'
 
     return @
+
+gifsApp.service 'gifUploader', ($http, $q, $upload) ->
+    (file) ->
+        _makeObjectKey = (file) ->
+            [parts..., ext] = file.name.split '.'
+            name = parts.join('').replace(/[^\w ]+/g, '').replace RegExp(' +', 'g'), '-'
+            random = Math.random().toString(36).substr 2, 6
+            file._path = "uploads/#{name}-#{random}.#{ext}"
+            file._path
+
+        _uploadToS3 = (signingResponse) ->
+            s3Params = signingResponse.data
+            $upload.upload
+                url: s3Params.endpoint
+                method: 'POST'
+                file: file
+                data:
+                    key: _makeObjectKey file
+                    acl: s3Params.acl
+                    'Content-Type' : file.type,
+                    'AWSAccessKeyId': s3Params.AWSAccessKeyId,
+                    'success_action_status' : '201',
+                    'Policy' : s3Params.policy,
+                    'Signature' : s3Params.signature
+
+        _done = (s3Resp) ->
+            file.progress = 100
+            data = xml2json.parser s3Resp.data
+
+            return dfd.reject data  unless s3Resp.status is 201
+
+            parsedData =
+                path:     file._path
+                fileName: file.name
+                location: decodeURIComponent data.postresponse.location
+                key:      data.postresponse.key
+
+            dfd.resolve parsedData
+
+        _onError = (err) -> dfd.reject err
+        _reportProgress = (evt) -> console.log '  progress', evt
+
+        dfd = $q.defer()
+
+        $http.get "/api/sign?mimeType=#{file.type}"
+            .then _uploadToS3
+            .then _done, null, _reportProgress
+            .catch _onError
+
+        dfd.promise
 
 gifsApp.factory 'transform', ->
     response: (key) ->
@@ -97,10 +116,13 @@ gifsApp.factory 'transform', ->
             if _.isNull(key) then null else angular.fromJson(raw)[key]
 
 gifsApp.factory 'Gif', ($resource, transform) ->
-    $resource '/api/gifs/:id', {id: '@id'},
+    $resource '/api/gifs/:id', {id: '@_id'},
         query:
             method: 'GET'
             transformResponse: transform.response 'gifs'
 
         update:
             method: 'PUT'
+
+        create:
+            method: 'POST'

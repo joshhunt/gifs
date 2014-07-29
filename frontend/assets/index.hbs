@@ -3,12 +3,14 @@
     <head>
         <title>Gifs</title>
     </head>
-    <body ng-controller="UploadCtrl as upld" ng-file-drop="upld.onFileSelect($files)" ng-file-drag-over-class="uploader-active" style="display: none">
+    <body ng-class="{'uploader-active': upld.uploading}" style="display: none" ng-controller="UploadCtrl as upld"
+        ng-file-drop="upld.onFileSelect($files)" ng-file-drag-over-class="uploader-active">
         <div ui-view></div>
 
         <div class="uploader">
             <div class="uploader__inner">
-                <h2>Drop .gifs to upload</h2>
+                <h2 ng-hide="upld.uploading">Drop .gifs to upload</h2>
+                <h2 ng-show="upld.uploading">Uploading...</h2>
             </div>
         </div>
 
