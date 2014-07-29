@@ -1,9 +1,6 @@
 crypto = require 'crypto'
 config = require './config'
 
-console.log 'Config:'
-console.log config
-
 getExpiryTime = ->
     date = new Date()
     "#{date.getFullYear()}-#{date.getMonth() + 1}-#{date.getDate() + 1}T#{date.getHours() + 3}:00:00.000Z"

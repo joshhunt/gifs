@@ -1,23 +1,42 @@
-require 'colors'
+fs            = require 'fs'
+path          = require 'path'
+
 es            = require 'event-stream'
 gulp          = require 'gulp'
 gutil         = require 'gulp-util'
 order         = require 'gulp-order'
+coffee        = require 'gulp-coffee'
+concat        = require 'gulp-concat'
+crypto        = require 'crypto'
 stylus        = require 'gulp-stylus'
 rimraf        = require 'rimraf'
-coffee        = require 'gulp-coffee'
 rename        = require 'gulp-rename'
-concat        = require 'gulp-concat'
+replace       = require 'gulp-replace'
 uglifyjs      = require 'gulp-uglify'
 minifycss     = require 'gulp-minify-css'
-bowerFiles    = require 'main-bower-files'
 awspublish    = require 'gulp-awspublish'
+bowerFiles    = require 'main-bower-files'
 ngAnnotate    = require 'gulp-ng-annotate'
 ngTemplates   = require 'gulp-angular-templatecache'
 autoprefiexer = require 'gulp-autoprefixer'
+require 'colors'
 
 OUTPUT = './dist'
 env = process.env
+cacheBustRegex = /ASSET\{(.*?)(\b,min\b)?\}/g
+
+calculateMD5 = (filePath) ->
+    unless fs.existsSync filePath
+        return Math.random().toString(36).substr 2, 6
+
+    md5 = crypto.createHash 'md5'
+    contents = fs.readFileSync filePath
+    md5.update(contents).digest 'hex'
+
+cacheBustFunc = (match, assetPath) ->
+    fsPath = path.join OUTPUT, assetPath
+    hash = calculateMD5(fsPath).slice 0, 6
+    "#{assetPath}?rel=#{hash}"
 
 gulp.on 'err', gutil.log
 
@@ -57,6 +76,7 @@ gulp.task 'scripts', ->
 
 gulp.task 'assets', ->
     gulp.src './frontend/assets/**'
+        .pipe replace cacheBustRegex, cacheBustFunc
         .pipe gulp.dest OUTPUT
 
 gulp.task 'watch', ->

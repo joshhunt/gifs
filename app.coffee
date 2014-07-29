@@ -1,3 +1,6 @@
+fs      = require 'fs'
+url     = require 'url'
+
 hbs     = require 'hbs'
 logfmt  = require 'logfmt'
 express = require 'express'
@@ -9,6 +12,13 @@ aws     = require './aws'
 app = express()
 
 hbs.registerHelper 'static', (text) ->
+    fsPath = 'dist' + text
+    fsPath = url.parse(fsPath).pathname
+    if fs.existsSync fsPath
+        console.log fsPath, 'exists on the file system'
+    else
+        console.log fsPath, 'DOESNT exist on the file system'
+
     prefix = if config.isProd then config.CDN_URL else ''
     prefix + text
 
@@ -25,9 +35,8 @@ app.get '/api/sign', aws.getS3Policy
 
 angularRoutes = ['/', '/list']
 
-for url in angularRoutes
-    app.get url, (req, res) -> res.render 'dist/index'
+for route in angularRoutes
+    app.get route, (req, res) -> res.render 'dist/index'
 
 port = Number process.env.PORT or 5000
-app.listen port, ->
-    console.log "Listening on port #{port}"
+app.listen port, -> console.log "Listening on port #{port}"
