@@ -1,6 +1,6 @@
 <header>
     <div class="preview">
-        <img class="preview__img" ng-src="{{previewUrl}}">
+        <img class="preview__img" ng-src="{{indx.previewUrl}}">
     </div>
     <h1>Gifs!</h1>
     <p>Hey, you've found my GIF collection!</p>
@@ -8,10 +8,10 @@
 
 <main>
     <div class="tags">
-        <div class="tags__box" ng-repeat="(title, gifList) in gifs">
+        <div class="tags__box" ng-repeat="(title, gifList) in indx.gifs">
             <h3 class="tags__title">{{title}}</h3>
             <ul class="gifs">
-                <li class="gifs__gif" ng-repeat="gif in gifList"><a href="{{gif.url}}" target="_blank">{{gif.title}}</a></li>
+                <li class="gifs__gif" ng-mouseenter="indx.hover(gif)" ng-repeat="gif in gifList"><a href="{{gif.url}}" target="_blank">{{gif.title}}</a></li>
             </ul>
         </div>
     </div>

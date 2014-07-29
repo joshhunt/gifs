@@ -23,18 +23,24 @@ gifsApp.config ($stateProvider, $locationProvider, $urlRouterProvider) ->
         .state 'index',
             url: '/'
             templateUrl: 'index.html'
-            controller: 'IndexCtrl'
+            controller: 'IndexCtrl as indx'
         .state 'gif',
             url: '/list'
             templateUrl: 'list.html'
 
 gifsApp.controller 'IndexCtrl', (Gif, $rootScope, $scope) ->
-    $scope.previewUrl = 'http://d114b3t5xlnw3o.cloudfront.net/uploads/obama-crying.gif'
-    $scope.gifs = Gif.query()
+    @previewUrl = 'http://d114b3t5xlnw3o.cloudfront.net/uploads/obama-crying.gif'
+    @gifs = Gif.query()
 
-    $rootScope.$on 'gifs.refreshIndex', ->
+    @hover = (gif) ->
+        $rootScope.$broadcast 'gifs.updatePreview', gif
+        @previewUrl = gif.url
+
+    $rootScope.$on 'gifs.refreshIndex', =>
         console.log 'refreshing gifs'
-        $scope.gifs.$query()
+        @gifs.$query()
+
+    return @
 
 gifsApp.controller 'UploadCtrl', (Gif, gifUploader, $http, $rootScope, $scope, $upload) ->
 
