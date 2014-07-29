@@ -75,7 +75,7 @@ gifsApp.controller 'UploadCtrl', ($http, $scope, $upload) ->
                         if resp.status is 201
                             data = xml2json.parser resp.data
                             parsedData =
-                                location: decodeURICompontent data.postresponse.location
+                                location: decodeURIComponent data.postresponse.location
                                 bucket:   data.postresponse.bucket
                                 etag:     data.postresponse.etag
                                 key:      data.postresponse.key
